@@ -24,6 +24,7 @@ import vtkPoints from "@kitware/vtk.js/Common/Core/Points";
 import vtkPolyData from "@kitware/vtk.js/Common/DataModel/PolyData";
 import vtkDataArray from "@kitware/vtk.js/Common/Core/DataArray";
 import vtkWarpScalar from "@kitware/vtk.js/Filters/General/WarpScalar";
+import vtkScalarBarActor from '@kitware/vtk.js/Rendering/Core/ScalarBarActor';
 import vtkRTAnalyticSource from "@kitware/vtk.js/Filters/Sources/RTAnalyticSource";
 import vtkImageSliceFilter from "@kitware/vtk.js/Filters/General/ImageSliceFilter";
 import vtkScalarToRGBA from "@kitware/vtk.js/Filters/General/ScalarToRGBA";
@@ -171,6 +172,14 @@ export default {
       // });
       // const renderer = fullScreenRenderer.getRenderer();
       // const renderWindow = fullScreenRenderer.getRenderWindow();
+
+      //color bar
+      const scalarBarActor = vtkScalarBarActor.newInstance();
+       scalarBarActor.setScalarsToColors(mapper.getLookupTable());
+       renderer.addActor(scalarBarActor);
+
+       scalarBarActor.setAxisLabel("acceleration");
+       scalarBarActor.setVisibility(true);
 
       renderer.addActor(actor);
       renderer.resetCamera();
