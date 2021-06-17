@@ -1,5 +1,5 @@
 <template>
-  <div class="hello"></div>
+  <div class="vtkView" ref="vtkContainer"></div>
 </template>
 
 
@@ -11,7 +11,7 @@ import vtkFullScreenRenderWindow from "@kitware/vtk.js/Rendering/Misc/FullScreen
 import vtkActor from "@kitware/vtk.js/Rendering/Core/Actor";
 import vtkMapper from "@kitware/vtk.js/Rendering/Core/Mapper";
 import vtkConeSource from "@kitware/vtk.js/Filters/Sources/ConeSource";
-import vtkOpenGLRenderWindow from "@kitware/vtk.js/Rendering/OpenGL/RenderWindow";
+import vtkWebGLRenderWindow from "@kitware/vtk.js/Rendering/OpenGL/RenderWindow";
 import vtkRenderWindow from "@kitware/vtk.js/Rendering/Core/RenderWindow";
 import vtkRenderWindowInteractor from "@kitware/vtk.js/Rendering/Core/RenderWindowInteractor";
 import vtkRenderer from "@kitware/vtk.js/Rendering/Core/Renderer";
@@ -106,7 +106,9 @@ export default {
       });
       polydata.getPointData().addArray(filledArray);
 
-      console.log(polydata.getPointData().getArrayByName("acceleration").getData())
+      console.log(
+        polydata.getPointData().getArrayByName("acceleration").getData()
+      );
       //actor
       const actor = vtkActor.newInstance();
 
@@ -138,13 +140,37 @@ export default {
 
       //edges
       actor.getProperty().setEdgeVisibility(true);
-      
+
       //renderer
-      const fullScreenRenderer = vtkFullScreenRenderWindow.newInstance({
-        rootContainer: this.$refs.vtkContainer,
-      });
-      const renderer = fullScreenRenderer.getRenderer();
-      const renderWindow = fullScreenRenderer.getRenderWindow();
+
+      const openglRenderWindow = vtkWebGLRenderWindow.newInstance();
+      const container = this.$refs.vtkContainer;
+      openglRenderWindow.setContainer(container);
+
+      const renderer = vtkRenderer.newInstance();
+
+      //https://kitware.github.io/vtk-js/examples/SimpleCone.html
+      const renderWindow = vtkRenderWindow.newInstance();
+      renderWindow.addRenderer(renderer);
+      renderWindow.addView(openglRenderWindow);
+
+      const { width, height } = container.getBoundingClientRect();
+      openglRenderWindow.setSize(width, height);
+
+      const interactor = vtkRenderWindowInteractor.newInstance();
+      interactor.setView(openglRenderWindow);
+      interactor.initialize();
+      interactor.bindEvents(container);
+
+      interactor.setInteractorStyle(
+        vtkInteractorStyleTrackballCamera.newInstance()
+      );
+
+      // const fullScreenRenderer = vtkFullScreenRenderWindow.newInstance({
+      //   rootContainer: this.$refs.vtkContainer,
+      // });
+      // const renderer = fullScreenRenderer.getRenderer();
+      // const renderWindow = fullScreenRenderer.getRenderWindow();
 
       renderer.addActor(actor);
       renderer.resetCamera();
@@ -219,5 +245,9 @@ li {
 }
 a {
   color: #42b983;
+}
+.vtkView {
+  width: 800px;
+  height: 700px;
 }
 </style>
